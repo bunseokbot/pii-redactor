@@ -89,7 +89,7 @@ jobs:
         run: go build -o bin/pii-redactor ./cmd/cli
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: binaries
           path: bin/
