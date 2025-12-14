@@ -20,7 +20,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o controller ./cmd/
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o pii-redactor ./cmd/cli
 
 # Runtime stage
-FROM alpine:3.19
+FROM alpine:3.23
 
 RUN apk --no-cache add ca-certificates tzdata
 
