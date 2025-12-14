@@ -1,0 +1,50 @@
+apiVersion: pii.namjun.kim/v1alpha1
+kind: PIICommunitySource
+metadata:
+  name: official-community
+  namespace: pii-system
+spec:
+  type: git
+  git:
+    url: https://github.com/bunseokbot/pii-redactor-community-rules
+    ref: main
+    path: rules
+  sync:
+    interval: "1h"
+    timeout: "5m"
+  trust:
+    verification:
+      enabled: false
+    allowedMaintainers:
+      - "@bunseokbot"
+---
+apiVersion: pii.namjun.kim/v1alpha1
+kind: PIIRuleSubscription
+metadata:
+  name: korea-finance-rules
+  namespace: pii-system
+spec:
+  sourceRef:
+    name: official-community
+  subscribe:
+    - category: korea
+      patterns:
+        - "*"
+    - category: finance
+      patterns:
+        - "credit-card"
+        - "bank-account"
+    - category: cloud-secrets
+      patterns:
+        - "aws-*"
+        - "gcp-*"
+  overrides:
+    - pattern: korea/phone
+      severity: medium
+  updatePolicy:
+    automatic: true
+    requireApproval:
+      - majorVersion
+    notifyOn:
+      - newPatterns
+      - securityFixes

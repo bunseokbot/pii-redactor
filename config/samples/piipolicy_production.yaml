@@ -1,0 +1,40 @@
+apiVersion: pii.namjun.kim/v1alpha1
+kind: PIIPolicy
+metadata:
+  name: production-policy
+  namespace: pii-system
+spec:
+  selector:
+    namespaces:
+      - production
+      - staging
+    excludeNamespaces:
+      - kube-system
+      - pii-system
+  patterns:
+    builtIn:
+      - email
+      - phone-kr
+      - korean-rrn
+      - credit-card
+      - aws-access-key
+    custom:
+      - name: korean-rrn-custom
+        namespace: pii-system
+  actions:
+    redact:
+      enabled: true
+    alert:
+      enabled: true
+      channels:
+        - slack-security-team
+      deduplication:
+        window: "5m"
+        key: "{{ .Namespace }}/{{ .Pod }}/{{ .PatternName }}"
+    audit:
+      enabled: true
+      includeOriginal: false
+  performance:
+    samplingRate: 100
+    maxLogSizeKB: 1024
+    batchSize: 100

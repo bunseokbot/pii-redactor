@@ -1,0 +1,77 @@
+# Default values for pii-redactor
+replicaCount: 1
+
+image:
+  repository: ghcr.io/bunseokbot/pii-redactor
+  pullPolicy: IfNotPresent
+  tag: ""  # Overrides the image tag whose default is the chart appVersion
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext: {}
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65532
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 64Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Controller configuration
+controller:
+  # Log level (debug, info, warn, error)
+  logLevel: info
+  # Metrics port
+  metricsPort: 8080
+  # Health probe port
+  healthPort: 8081
+
+# Built-in patterns configuration
+builtInPatterns:
+  # Enable all built-in patterns by default
+  enabled: true
+  # Categories to enable (global, usa, korea, secrets)
+  categories:
+    - global
+    - usa
+    - korea
+    - secrets
+
+# Community rules configuration
+communityRules:
+  # Enable community rules support
+  enabled: false
+  # Default maturity levels to accept
+  defaultMaturityLevels:
+    - stable
+    - incubating
+
+# Monitoring configuration
+monitoring:
+  # Enable Prometheus ServiceMonitor
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    labels: {}

@@ -1,0 +1,27 @@
+apiVersion: pii.namjun.kim/v1alpha1
+kind: PIIRuleSubscription
+metadata:
+  name: community-rules
+  namespace: pii-system
+spec:
+  sourceRef:
+    name: official-community
+  maturityLevels:
+    - stable
+  subscribe:
+    - category: usa
+      patterns: ["*"]
+    - category: secrets
+      patterns: ["aws-*", "github-*", "stripe-*"]
+    - category: compliance/pci-dss
+      patterns: ["*"]
+  overrides:
+    - pattern: usa/ssn
+      severity: critical
+    - pattern: secrets/aws-credentials
+      maskingStrategy:
+        type: full
+  updatePolicy:
+    automatic: true
+    requireApproval:
+      - majorVersion

@@ -1,0 +1,17 @@
+apiVersion: pii.namjun.kim/v1alpha1
+kind: PIIAlertChannel
+metadata:
+  name: slack-alerts
+  namespace: pii-system
+spec:
+  type: slack
+  slack:
+    webhookURLSecretRef:
+      name: slack-webhook
+      key: url
+    channel: "#security-alerts"
+  throttle:
+    maxAlertsPerMinute: 10
+    groupBy:
+      - namespace
+      - pattern

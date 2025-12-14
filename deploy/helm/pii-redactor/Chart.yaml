@@ -1,0 +1,19 @@
+apiVersion: v2
+name: pii-redactor
+description: Kubernetes PII Detection and Redaction Operator
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - pii
+  - security
+  - privacy
+  - redaction
+  - kubernetes
+  - operator
+home: https://github.com/bunseokbot/pii-redactor
+sources:
+  - https://github.com/bunseokbot/pii-redactor
+maintainers:
+  - name: bunseokbot
+    url: https://github.com/bunseokbot

@@ -1,0 +1,116 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: piialertchannels.pii.namjun.kim
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+spec:
+  group: pii.namjun.kim
+  names:
+    kind: PIIAlertChannel
+    listKind: PIIAlertChannelList
+    plural: piialertchannels
+    singular: piialertchannel
+    shortNames:
+      - piiac
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              type: object
+              required:
+                - type
+              properties:
+                type:
+                  type: string
+                  enum: [slack, pagerduty, webhook, email]
+                slack:
+                  type: object
+                  properties:
+                    webhookURLSecretRef:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        key:
+                          type: string
+                    channel:
+                      type: string
+                pagerDuty:
+                  type: object
+                  properties:
+                    routingKeySecretRef:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        key:
+                          type: string
+                    severity:
+                      type: string
+                      enum: [critical, error, warning, info]
+                webhook:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                    method:
+                      type: string
+                      enum: [POST, PUT]
+                    headers:
+                      type: object
+                      additionalProperties:
+                        type: string
+                    authSecretRef:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        key:
+                          type: string
+                throttle:
+                  type: object
+                  properties:
+                    maxAlertsPerMinute:
+                      type: integer
+                    groupBy:
+                      type: array
+                      items:
+                        type: string
+            status:
+              type: object
+              properties:
+                ready:
+                  type: boolean
+                lastAlert:
+                  type: string
+                  format: date-time
+                alertsSent:
+                  type: integer
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Type
+          type: string
+          jsonPath: .spec.type
+        - name: Ready
+          type: boolean
+          jsonPath: .status.ready
+        - name: Alerts Sent
+          type: integer
+          jsonPath: .status.alertsSent
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp

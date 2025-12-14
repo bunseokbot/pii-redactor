@@ -1,0 +1,139 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: piirulesubscriptions.pii.namjun.kim
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+spec:
+  group: pii.namjun.kim
+  names:
+    kind: PIIRuleSubscription
+    listKind: PIIRuleSubscriptionList
+    plural: piirulesubscriptions
+    singular: piirulesubscription
+    shortNames:
+      - piirs
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              type: object
+              required:
+                - sourceRef
+                - subscribe
+              properties:
+                sourceRef:
+                  type: object
+                  required:
+                    - name
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                maturityLevels:
+                  type: array
+                  items:
+                    type: string
+                    enum: [stable, incubating, sandbox, deprecated]
+                subscribe:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - category
+                      - patterns
+                    properties:
+                      category:
+                        type: string
+                      version:
+                        type: string
+                      patterns:
+                        type: array
+                        items:
+                          type: string
+                overrides:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - pattern
+                    properties:
+                      pattern:
+                        type: string
+                      severity:
+                        type: string
+                      enabled:
+                        type: boolean
+                      maskingStrategy:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                          showFirst:
+                            type: integer
+                          showLast:
+                            type: integer
+                          maskChar:
+                            type: string
+                updatePolicy:
+                  type: object
+                  properties:
+                    automatic:
+                      type: boolean
+                      default: true
+                    requireApproval:
+                      type: array
+                      items:
+                        type: string
+            status:
+              type: object
+              properties:
+                subscribedPatterns:
+                  type: integer
+                lastUpdated:
+                  type: string
+                  format: date-time
+                syncStatus:
+                  type: string
+                  enum: [Synced, OutOfSync, Error]
+                lastError:
+                  type: string
+                pendingUpdates:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      pattern:
+                        type: string
+                      currentVersion:
+                        type: string
+                      availableVersion:
+                        type: string
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Source
+          type: string
+          jsonPath: .spec.sourceRef.name
+        - name: Patterns
+          type: integer
+          jsonPath: .status.subscribedPatterns
+        - name: Status
+          type: string
+          jsonPath: .status.syncStatus
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp

@@ -1,0 +1,37 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pii-redactor-manager
+  labels:
+    app.kubernetes.io/name: pii-redactor
+rules:
+  # Core resources
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "configmaps", "secrets", "events"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+  # PII Redactor CRDs
+  - apiGroups: ["pii.namjun.kim"]
+    resources: ["*"]
+    verbs: ["*"]
+  # Leader election
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pii-redactor-manager
+  labels:
+    app.kubernetes.io/name: pii-redactor
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pii-redactor-manager
+subjects:
+  - kind: ServiceAccount
+    name: pii-redactor-controller
+    namespace: pii-system

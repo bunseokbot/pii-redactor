@@ -1,0 +1,28 @@
+apiVersion: pii.namjun.kim/v1alpha1
+kind: PIIPattern
+metadata:
+  name: korean-rrn-custom
+  namespace: pii-system
+spec:
+  displayName: "Korean Resident Registration Number (Custom)"
+  description: "한국 주민등록번호 - 사용자 정의 패턴"
+  patterns:
+    - regex: '\d{6}-[1-4]\d{6}'
+      confidence: high
+    - regex: '\d{6}[1-4]\d{6}'
+      confidence: medium
+  validator: "rrn-checksum"
+  maskingStrategy:
+    type: partial
+    showFirst: 6
+    showLast: 0
+    maskChar: "*"
+  severity: critical
+  enabled: true
+  testCases:
+    shouldMatch:
+      - "920101-1234567"
+      - "주민번호: 850515-2345678"
+    shouldNotMatch:
+      - "123456-789012"
+      - "000000-0000000"

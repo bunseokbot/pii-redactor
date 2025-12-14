@@ -1,0 +1,24 @@
+apiVersion: pii.namjun.kim/v1alpha1
+kind: PIIPattern
+metadata:
+  name: custom-employee-id
+  namespace: default
+spec:
+  displayName: "Employee ID"
+  description: "Detects company employee IDs (format: EMP-XXXXXX)"
+  patterns:
+    - regex: 'EMP-[0-9]{6}'
+      confidence: high
+  maskingStrategy:
+    type: partial
+    showFirst: 4
+    showLast: 0
+    maskChar: "*"
+  severity: medium
+  testCases:
+    shouldMatch:
+      - "EMP-123456"
+      - "Employee: EMP-789012"
+    shouldNotMatch:
+      - "EMP-12345"
+      - "EMP-1234567"

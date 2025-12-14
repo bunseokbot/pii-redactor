@@ -1,0 +1,29 @@
+apiVersion: pii.namjun.kim/v1alpha1
+kind: PIIPolicy
+metadata:
+  name: default-policy
+  namespace: pii-system
+spec:
+  targetNamespaces:
+    matchNames:
+      - default
+      - production
+    excludeNames:
+      - kube-system
+  builtInPatterns:
+    enabled: true
+    categories:
+      - global
+      - usa
+      - korea
+      - secrets
+    exclude:
+      - phone-kr  # Exclude specific pattern
+  customPatternRefs:
+    - name: custom-employee-id
+      namespace: default
+  action:
+    onDetection: redact
+    alertChannelRef:
+      name: slack-alerts
+      namespace: pii-system

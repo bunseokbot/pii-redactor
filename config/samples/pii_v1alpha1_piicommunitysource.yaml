@@ -1,0 +1,17 @@
+apiVersion: pii.namjun.kim/v1alpha1
+kind: PIICommunitySource
+metadata:
+  name: official-community
+  namespace: pii-system
+spec:
+  type: git
+  git:
+    url: https://github.com/bunseokbot/pii-redactor-community-rules
+    ref: main
+    path: rules
+  sync:
+    interval: "1h"
+    timeout: "5m"
+  defaultMaturityLevels:
+    - stable
+    - incubating

@@ -1,0 +1,143 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: piicommunitysources.pii.namjun.kim
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+spec:
+  group: pii.namjun.kim
+  names:
+    kind: PIICommunitySource
+    listKind: PIICommunitySourceList
+    plural: piicommunitysources
+    singular: piicommunitysource
+    shortNames:
+      - piics
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              type: object
+              required:
+                - type
+              properties:
+                type:
+                  type: string
+                  enum: [git, oci, http]
+                git:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                    ref:
+                      type: string
+                      default: main
+                    path:
+                      type: string
+                      default: rules
+                    auth:
+                      type: object
+                      properties:
+                        secretRef:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            key:
+                              type: string
+                        sshKeyRef:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            key:
+                              type: string
+                oci:
+                  type: object
+                  properties:
+                    registry:
+                      type: string
+                    repository:
+                      type: string
+                    tag:
+                      type: string
+                      default: latest
+                http:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                    headers:
+                      type: object
+                      additionalProperties:
+                        type: string
+                sync:
+                  type: object
+                  properties:
+                    interval:
+                      type: string
+                      default: "1h"
+                    timeout:
+                      type: string
+                      default: "5m"
+                defaultMaturityLevels:
+                  type: array
+                  items:
+                    type: string
+                    enum: [stable, incubating, sandbox, deprecated]
+            status:
+              type: object
+              properties:
+                lastSyncTime:
+                  type: string
+                  format: date-time
+                syncStatus:
+                  type: string
+                  enum: [Synced, Syncing, Failed, Unknown]
+                lastSyncError:
+                  type: string
+                totalPatterns:
+                  type: integer
+                availableRuleSets:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      version:
+                        type: string
+                      patterns:
+                        type: integer
+                      category:
+                        type: string
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Type
+          type: string
+          jsonPath: .spec.type
+        - name: Status
+          type: string
+          jsonPath: .status.syncStatus
+        - name: Patterns
+          type: integer
+          jsonPath: .status.totalPatterns
+        - name: Last Sync
+          type: date
+          jsonPath: .status.lastSyncTime
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp

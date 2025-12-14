@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: pii-system
+
+resources:
+  - namespace.yaml
+  - ../../../config/crd/bases/pii.namjun.kim_piipatterns.yaml
+  - ../../../config/crd/bases/pii.namjun.kim_piipolicies.yaml
+  - ../../../config/crd/bases/pii.namjun.kim_piialertchannels.yaml
+  - ../../../config/crd/bases/pii.namjun.kim_piicommunitysources.yaml
+  - ../../../config/crd/bases/pii.namjun.kim_piirulesubscriptions.yaml
+  - serviceaccount.yaml
+  - rbac.yaml
+  - deployment.yaml
+  - service.yaml
+
+images:
+  - name: controller
+    newName: ghcr.io/bunseokbot/pii-redactor
+    newTag: latest

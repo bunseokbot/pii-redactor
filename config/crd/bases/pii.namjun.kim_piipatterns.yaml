@@ -1,0 +1,119 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: piipatterns.pii.namjun.kim
+spec:
+  group: pii.namjun.kim
+  names:
+    kind: PIIPattern
+    listKind: PIIPatternList
+    plural: piipatterns
+    singular: piipattern
+    shortNames:
+      - pp
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              type: object
+              required:
+                - patterns
+              properties:
+                displayName:
+                  type: string
+                description:
+                  type: string
+                patterns:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - regex
+                    properties:
+                      regex:
+                        type: string
+                      confidence:
+                        type: string
+                        enum: ["high", "medium", "low"]
+                        default: "medium"
+                validator:
+                  type: string
+                maskingStrategy:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum: ["full", "partial", "hash", "tokenize"]
+                      default: "partial"
+                    showFirst:
+                      type: integer
+                      default: 0
+                    showLast:
+                      type: integer
+                      default: 0
+                    maskChar:
+                      type: string
+                      default: "*"
+                    replacement:
+                      type: string
+                severity:
+                  type: string
+                  enum: ["critical", "high", "medium", "low"]
+                  default: "medium"
+                enabled:
+                  type: boolean
+                  default: true
+                testCases:
+                  type: object
+                  properties:
+                    shouldMatch:
+                      type: array
+                      items:
+                        type: string
+                    shouldNotMatch:
+                      type: array
+                      items:
+                        type: string
+            status:
+              type: object
+              properties:
+                ready:
+                  type: boolean
+                lastValidated:
+                  type: string
+                  format: date-time
+                validationErrors:
+                  type: array
+                  items:
+                    type: string
+                matchCount:
+                  type: integer
+                  format: int64
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Display Name
+          type: string
+          jsonPath: .spec.displayName
+        - name: Severity
+          type: string
+          jsonPath: .spec.severity
+        - name: Ready
+          type: boolean
+          jsonPath: .status.ready
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
