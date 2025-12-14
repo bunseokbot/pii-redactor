@@ -117,43 +117,45 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
-      - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Run gosec security scanner
-        run: |
-          go install github.com/securego/gosec/v2/cmd/gosec@latest
-          gosec -fmt sarif -out gosec-results.sarif ./... || true
-
-      - name: Upload gosec results
-        uses: github/codeql-action/upload-sarif@v4
-        if: always() && hashFiles('gosec-results.sarif') != ''
-        with:
-          sarif_file: 'gosec-results.sarif'
+  # NOTE: Security scan disabled for private repository
+  # TODO: Re-enable when repository becomes public or GitHub Advanced Security is enabled
+  # security:
+  #   name: Security Scan
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     actions: read
+  #     contents: read
+  #     security-events: write
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v6
+  #
+  #     - name: Run Trivy vulnerability scanner
+  #       uses: aquasecurity/trivy-action@master
+  #       with:
+  #         scan-type: 'fs'
+  #         scan-ref: '.'
+  #         format: 'sarif'
+  #         output: 'trivy-results.sarif'
+  #
+  #     - name: Upload Trivy scan results
+  #       uses: github/codeql-action/upload-sarif@v4
+  #       if: always()
+  #       with:
+  #         sarif_file: 'trivy-results.sarif'
+  #
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v6
+  #       with:
+  #         go-version: ${{ env.GO_VERSION }}
+  #
+  #     - name: Run gosec security scanner
+  #       run: |
+  #         go install github.com/securego/gosec/v2/cmd/gosec@latest
+  #         gosec -fmt sarif -out gosec-results.sarif ./... || true
+  #
+  #     - name: Upload gosec results
+  #       uses: github/codeql-action/upload-sarif@v4
+  #       if: always() && hashFiles('gosec-results.sarif') != ''
+  #       with:
+  #         sarif_file: 'gosec-results.sarif'
