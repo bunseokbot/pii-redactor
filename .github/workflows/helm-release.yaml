@@ -1,0 +1,50 @@
+name: Release Helm Chart
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/helm/**'
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+  CHART_NAME: pii-redactor
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Login to GHCR
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+      - name: Package Helm chart
+        run: |
+          helm package deploy/helm/${{ env.CHART_NAME }}
+
+      - name: Push to GHCR
+        run: |
+          helm push ${{ env.CHART_NAME }}-*.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+
+      - name: Summary
+        run: |
+          echo "## Helm Chart Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Install with:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "helm install pii-redactor oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${{ env.CHART_NAME }} --namespace pii-system --create-namespace" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

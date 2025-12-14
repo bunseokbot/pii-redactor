@@ -1,0 +1,74 @@
+# Binaries
+bin/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Build artifacts
+*.o
+*.a
+*.out
+
+# Test
+*.test
+cover.out
+coverage.html
+coverage.txt
+
+# Go
+vendor/
+go.work
+go.work.sum
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# Helm
+deploy/helm/*.tgz
+.helm-repo/
+charts/
+
+# Kubernetes
+*.kubeconfig
+kubeconfig
+
+# Local development
+.env
+.env.local
+*.local
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Debug
+debug
+__debug_bin
+
+# GoReleaser
+dist/
+
+# Kind
+.kind/
