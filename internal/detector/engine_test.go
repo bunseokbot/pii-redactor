@@ -224,6 +224,6 @@ func BenchmarkEngine_Detect(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		engine.DetectInText(ctx, input)
+		_, _ = engine.DetectInText(ctx, input)
 	}
 }
