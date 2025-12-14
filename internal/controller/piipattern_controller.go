@@ -36,7 +36,7 @@ func (r *PIIPatternReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	var pattern piiv1alpha1.PIIPattern
 	if err := r.Get(ctx, req.NamespacedName, &pattern); err != nil {
 		// Pattern was deleted, remove from engine
-		r.Engine.RemovePattern(req.NamespacedName.String())
+		r.Engine.RemovePattern(req.String())
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
@@ -66,7 +66,7 @@ func (r *PIIPatternReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if enabled {
 		// Add pattern to engine
 		spec := convertToPatternSpec(&pattern)
-		if err := r.Engine.AddPattern(req.NamespacedName.String(), spec); err != nil {
+		if err := r.Engine.AddPattern(req.String(), spec); err != nil {
 			validationErrors = append(validationErrors, err.Error())
 			pattern.Status.Ready = false
 			pattern.Status.ValidationErrors = validationErrors
@@ -76,7 +76,7 @@ func (r *PIIPatternReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	} else {
 		// Remove pattern from engine if disabled
-		r.Engine.RemovePattern(req.NamespacedName.String())
+		r.Engine.RemovePattern(req.String())
 		pattern.Status.Ready = false
 	}
 
