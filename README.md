@@ -63,6 +63,49 @@ make deploy
 make sample
 ```
 
+### Deploy with Helm
+
+```bash
+# Install from OCI registry (recommended)
+helm install pii-redactor oci://ghcr.io/bunseokbot/charts/pii-redactor \
+  --namespace pii-system \
+  --create-namespace
+
+# Or install from local source
+helm install pii-redactor ./deploy/helm/pii-redactor \
+  --namespace pii-system \
+  --create-namespace
+
+# Install with custom values
+helm install pii-redactor oci://ghcr.io/bunseokbot/charts/pii-redactor \
+  --namespace pii-system \
+  --create-namespace \
+  --set controller.logLevel=debug \
+  --set monitoring.serviceMonitor.enabled=true
+
+# Upgrade
+helm upgrade pii-redactor oci://ghcr.io/bunseokbot/charts/pii-redactor \
+  --namespace pii-system
+
+# Uninstall
+helm uninstall pii-redactor --namespace pii-system
+```
+
+#### Helm Values
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `replicaCount` | Number of controller replicas | `1` |
+| `image.repository` | Controller image repository | `ghcr.io/bunseokbot/pii-redactor` |
+| `image.tag` | Controller image tag | `appVersion` |
+| `controller.logLevel` | Log level (debug, info, warn, error) | `info` |
+| `builtInPatterns.enabled` | Enable built-in PII patterns | `true` |
+| `builtInPatterns.categories` | Pattern categories to enable | `[global, usa, korea, secrets]` |
+| `communityRules.enabled` | Enable community rules support | `false` |
+| `monitoring.serviceMonitor.enabled` | Enable Prometheus ServiceMonitor | `false` |
+| `resources.limits.cpu` | CPU limit | `500m` |
+| `resources.limits.memory` | Memory limit | `128Mi` |
+
 ## Custom Resource Definitions
 
 ### PIIPattern - Define PII Patterns
@@ -180,52 +223,6 @@ spec:
 | `password-in-url` | Passwords embedded in URLs | critical |
 | `iban` | International Bank Account Numbers | critical |
 | `mac-address` | MAC addresses | low |
-
-## Development
-
-```bash
-# Install dependencies
-go mod download
-
-# Build
-make build
-
-# Run tests
-make test
-
-# Run local test
-make test-local
-
-# Build Docker image
-make docker-build IMG=ghcr.io/bunseokbot/pii-redactor:latest
-
-# Push Docker image
-make docker-push IMG=ghcr.io/bunseokbot/pii-redactor:latest
-```
-
-## Project Structure
-
-```
-pii-redactor/
-├── api/v1alpha1/           # CRD type definitions
-├── cmd/
-│   ├── controller/         # Operator controller
-│   └── cli/                # CLI tool
-├── internal/
-│   ├── controller/         # Reconciler implementations
-│   ├── detector/           # PII detection engine
-│   │   ├── patterns/       # Built-in patterns
-│   │   └── validator/      # Checksum validators
-│   ├── redactor/           # Masking handlers
-│   └── community/          # Community rule sync
-├── config/
-│   ├── crd/                # CRD manifests
-│   ├── manager/            # Controller deployment
-│   ├── rbac/               # RBAC configuration
-│   └── samples/            # Sample CRs
-├── .github/workflows/      # GitHub Actions
-└── Makefile
-```
 
 ## Community Rules
 

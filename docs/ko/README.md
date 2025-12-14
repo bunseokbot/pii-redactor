@@ -63,6 +63,49 @@ make deploy
 make sample
 ```
 
+### Helm으로 배포
+
+```bash
+# OCI 레지스트리에서 설치 (권장)
+helm install pii-redactor oci://ghcr.io/bunseokbot/charts/pii-redactor \
+  --namespace pii-system \
+  --create-namespace
+
+# 또는 로컬 소스에서 설치
+helm install pii-redactor ./deploy/helm/pii-redactor \
+  --namespace pii-system \
+  --create-namespace
+
+# 커스텀 values로 설치
+helm install pii-redactor oci://ghcr.io/bunseokbot/charts/pii-redactor \
+  --namespace pii-system \
+  --create-namespace \
+  --set controller.logLevel=debug \
+  --set monitoring.serviceMonitor.enabled=true
+
+# 업그레이드
+helm upgrade pii-redactor oci://ghcr.io/bunseokbot/charts/pii-redactor \
+  --namespace pii-system
+
+# 삭제
+helm uninstall pii-redactor --namespace pii-system
+```
+
+#### Helm Values
+
+| 파라미터 | 설명 | 기본값 |
+|----------|------|--------|
+| `replicaCount` | 컨트롤러 레플리카 수 | `1` |
+| `image.repository` | 컨트롤러 이미지 저장소 | `ghcr.io/bunseokbot/pii-redactor` |
+| `image.tag` | 컨트롤러 이미지 태그 | `appVersion` |
+| `controller.logLevel` | 로그 레벨 (debug, info, warn, error) | `info` |
+| `builtInPatterns.enabled` | 내장 PII 패턴 활성화 | `true` |
+| `builtInPatterns.categories` | 활성화할 패턴 카테고리 | `[global, usa, korea, secrets]` |
+| `communityRules.enabled` | 커뮤니티 룰 지원 활성화 | `false` |
+| `monitoring.serviceMonitor.enabled` | Prometheus ServiceMonitor 활성화 | `false` |
+| `resources.limits.cpu` | CPU 제한 | `500m` |
+| `resources.limits.memory` | 메모리 제한 | `128Mi` |
+
 ## Custom Resource Definitions
 
 ### PIIPattern - PII 패턴 정의
@@ -180,52 +223,6 @@ spec:
 | `password-in-url` | URL에 포함된 비밀번호 | critical |
 | `iban` | 국제은행계좌번호 | critical |
 | `mac-address` | MAC 주소 | low |
-
-## 개발
-
-```bash
-# 의존성 설치
-go mod download
-
-# 빌드
-make build
-
-# 테스트 실행
-make test
-
-# 로컬 테스트 실행
-make test-local
-
-# Docker 이미지 빌드
-make docker-build IMG=ghcr.io/bunseokbot/pii-redactor:latest
-
-# Docker 이미지 푸시
-make docker-push IMG=ghcr.io/bunseokbot/pii-redactor:latest
-```
-
-## 프로젝트 구조
-
-```
-pii-redactor/
-├── api/v1alpha1/           # CRD 타입 정의
-├── cmd/
-│   ├── controller/         # Operator 컨트롤러
-│   └── cli/                # CLI 도구
-├── internal/
-│   ├── controller/         # Reconciler 구현
-│   ├── detector/           # PII 탐지 엔진
-│   │   ├── patterns/       # 내장 패턴
-│   │   └── validator/      # 체크섬 검증기
-│   ├── redactor/           # 마스킹 핸들러
-│   └── community/          # 커뮤니티 룰 동기화
-├── config/
-│   ├── crd/                # CRD 매니페스트
-│   ├── manager/            # 컨트롤러 배포
-│   ├── rbac/               # RBAC 설정
-│   └── samples/            # 샘플 CR
-├── .github/workflows/      # GitHub Actions
-└── Makefile
-```
 
 ## 커뮤니티 룰
 
