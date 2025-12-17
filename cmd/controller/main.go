@@ -13,8 +13,13 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	piiv1alpha1 "github.com/bunseokbot/pii-redactor/api/v1alpha1"
+	"github.com/bunseokbot/pii-redactor/internal/audit"
 	"github.com/bunseokbot/pii-redactor/internal/controller"
 	"github.com/bunseokbot/pii-redactor/internal/detector"
+	"github.com/bunseokbot/pii-redactor/internal/notifier"
+	"github.com/bunseokbot/pii-redactor/internal/policy"
+	"github.com/bunseokbot/pii-redactor/internal/source"
+	"github.com/bunseokbot/pii-redactor/internal/subscription"
 )
 
 var (
@@ -60,8 +65,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Create detection engine
+	// Create shared components
 	engine := detector.NewEngine()
+	notifierManager := notifier.NewManager()
+	auditLogger := audit.NewControllerRuntimeLogger()
+	sourceCache := source.NewCache()
+
+	// Create policy components
+	policyMatcher := policy.NewMatcher(mgr.GetClient())
+	policyAggregator := policy.NewAggregator(mgr.GetClient(), engine)
+
+	// Create subscription components
+	subscriptionManager := subscription.NewManager(sourceCache, engine)
+	subscriptionUpdater := subscription.NewUpdater(sourceCache, subscriptionManager)
 
 	// Setup PIIPattern controller
 	if err = (&controller.PIIPatternReconciler{
@@ -70,6 +86,53 @@ func main() {
 		Engine: engine,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "PIIPattern")
+		os.Exit(1)
+	}
+
+	// Setup PIIAlertChannel controller
+	if err = (&controller.PIIAlertChannelReconciler{
+		Client:          mgr.GetClient(),
+		Scheme:          mgr.GetScheme(),
+		NotifierManager: notifierManager,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "PIIAlertChannel")
+		os.Exit(1)
+	}
+
+	// Setup PIIPolicy controller
+	if err = (&controller.PIIPolicyReconciler{
+		Client:          mgr.GetClient(),
+		Scheme:          mgr.GetScheme(),
+		Engine:          engine,
+		NotifierManager: notifierManager,
+		AuditLogger:     auditLogger,
+		Matcher:         policyMatcher,
+		Aggregator:      policyAggregator,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "PIIPolicy")
+		os.Exit(1)
+	}
+
+	// Setup PIICommunitySource controller
+	if err = (&controller.PIICommunitySourceReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+		Cache:  sourceCache,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "PIICommunitySource")
+		os.Exit(1)
+	}
+
+	// Setup PIIRuleSubscription controller
+	if err = (&controller.PIIRuleSubscriptionReconciler{
+		Client:              mgr.GetClient(),
+		Scheme:              mgr.GetScheme(),
+		Engine:              engine,
+		Cache:               sourceCache,
+		SubscriptionManager: subscriptionManager,
+		Updater:             subscriptionUpdater,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "PIIRuleSubscription")
 		os.Exit(1)
 	}
 

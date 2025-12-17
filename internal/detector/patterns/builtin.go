@@ -483,9 +483,18 @@ var BuiltInPatterns = map[string]PIIPatternSpec{
 }
 
 // GetBuiltInPattern returns a built-in pattern by name
-func GetBuiltInPattern(name string) (PIIPatternSpec, bool) {
+func GetBuiltInPattern(name string) *PIIPatternSpec {
 	pattern, ok := BuiltInPatterns[name]
-	return pattern, ok
+	if !ok {
+		return nil
+	}
+	return &pattern
+}
+
+// IsBuiltInPattern checks if a pattern name is a built-in pattern
+func IsBuiltInPattern(name string) bool {
+	_, ok := BuiltInPatterns[name]
+	return ok
 }
 
 // ListBuiltInPatterns returns all built-in pattern names

@@ -403,3 +403,40 @@ func (e *Engine) ListPatternsByCategory(category string) []string {
 	}
 	return names
 }
+
+// HasPattern checks if a pattern exists in the engine
+func (e *Engine) HasPattern(name string) bool {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+	_, ok := e.patterns[name]
+	return ok
+}
+
+// GetPatternSpec returns the pattern specification for a pattern
+func (e *Engine) GetPatternSpec(name string) *patterns.PIIPatternSpec {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+
+	pattern, ok := e.patterns[name]
+	if !ok {
+		return nil
+	}
+
+	// Convert CompiledPattern back to PIIPatternSpec
+	spec := &patterns.PIIPatternSpec{
+		DisplayName:     pattern.DisplayName,
+		Description:     "",
+		Validator:       pattern.Validator,
+		MaskingStrategy: pattern.MaskingStrategy,
+		Severity:        pattern.Severity,
+	}
+
+	for _, rule := range pattern.Patterns {
+		spec.Patterns = append(spec.Patterns, patterns.PatternRule{
+			Regex:      rule.Regex.String(),
+			Confidence: rule.Confidence,
+		})
+	}
+
+	return spec
+}
